@@ -1,0 +1,111 @@
+<?xml version="1.0"?>
+<block>
+	<name>Detection Engine</name>
+	<key>orbitsense_detection_engine</key>
+	<category>[orbitsense]</category>
+	<import>import orbitsense</import>
+	<make>orbitsense.detection_engine($fft_size, $method,
+		$energy_thresh_dB, $nf_est,
+		$noise_floor_val, $noise_floor_time, $sampling_rate, $window)
+	</make>
+
+	<param>
+		<name>FFT size</name>
+		<key>fft_size</key>
+		<value>1024</value>
+		<type>int</type>
+	</param>
+
+	<param>
+		<name>Sensing Method</name>
+		<key>method</key>
+		<type>enum</type>
+		<hide>part</hide>
+		<option>
+			<name>Energy Detection</name>
+			<key>0</key>
+			<opt>hide_thresh:</opt>
+		</option>
+		<option>
+			<name>Covariance Based</name>
+			<key>1</key>
+			<opt>hide_thresh:all</opt>
+		</option>
+	</param>
+
+	<param>
+		<name>Energy Threshold in db</name>
+		<key>energy_thresh_dB</key>
+		<value>2.0</value>
+		<type>float</type>
+		<hide>$method.hide_thresh</hide>
+	</param>
+
+	<param>
+		<name>Estimation of Noise Floor</name>
+		<key>nf_est</key>
+		<type>enum</type>
+		<option>
+			<name>No</name>
+			<key>0</key>
+		</option>
+		<option>
+			<name>Yes</name>
+			<key>1</key>
+		</option>
+	</param>
+
+	<param>
+		<name>Noise Floor value</name>
+		<key>noise_floor_val</key>
+		<value>-100</value>
+		<type>float</type>
+		<hide>#if int($nf_est())==0 then 'none' else 'all'#</hide>
+	</param>
+
+	<param>
+		<name>NF estimation time (s)</name>
+		<key>noise_floor_time</key>
+		<value>0.1</value>
+		<type>float</type>
+		<hide>#if int($nf_est())==1 then 'none' else 'all'#</hide>
+	</param>
+
+
+	<param>
+		<name>Sampling Rate</name>
+		<key>sampling_rate</key>
+		<value>1e6</value>
+		<type>float</type>
+	</param>
+
+	<param>
+		<name>Window Function</name>
+		<key>window</key>
+		<type>enum</type>
+		<option>
+			<name>Flat top</name>
+			<key>0</key>
+		</option>
+		<option>
+			<name>Blackmann-Harris</name>
+			<key>1</key>
+		</option>
+		<option>
+			<name>None</name>
+			<key>2</key>
+		</option>
+	</param>
+
+	<sink>
+		<name>in0</name>
+		<type>complex</type>
+	</sink>
+
+	<source>
+		<name>data_out</name>
+		<type>message</type>
+	</source>
+
+
+</block>

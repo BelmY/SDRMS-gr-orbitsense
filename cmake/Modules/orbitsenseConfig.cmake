@@ -1,0 +1,30 @@
+INCLUDE(FindPkgConfig)
+PKG_CHECK_MODULES(PC_ORBITSENSE orbitsense)
+
+FIND_PATH(
+    ORBITSENSE_INCLUDE_DIRS
+    NAMES orbitsense/api.h
+    HINTS $ENV{ORBITSENSE_DIR}/include
+        ${PC_ORBITSENSE_INCLUDEDIR}
+    PATHS ${CMAKE_INSTALL_PREFIX}/include
+          /usr/local/include
+          /usr/include
+)
+
+FIND_LIBRARY(
+    ORBITSENSE_LIBRARIES
+    NAMES gnuradio-orbitsense
+    HINTS $ENV{ORBITSENSE_DIR}/lib
+        ${PC_ORBITSENSE_LIBDIR}
+    PATHS ${CMAKE_INSTALL_PREFIX}/lib
+          ${CMAKE_INSTALL_PREFIX}/lib64
+          /usr/local/lib
+          /usr/local/lib64
+          /usr/lib
+          /usr/lib64
+)
+
+INCLUDE(FindPackageHandleStandardArgs)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(ORBITSENSE DEFAULT_MSG ORBITSENSE_LIBRARIES ORBITSENSE_INCLUDE_DIRS)
+MARK_AS_ADVANCED(ORBITSENSE_LIBRARIES ORBITSENSE_INCLUDE_DIRS)
+
