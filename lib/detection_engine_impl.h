@@ -38,6 +38,9 @@ namespace gr
     {
     private:
 
+      /* Define static pi */
+      const double pi = 3.141592653589793;
+
       /* The FFT size */
       const size_t d_fft_size;
 
@@ -64,19 +67,52 @@ namespace gr
       /* Duty cycle class instance */
       energy_detection* d_energy_detection;
 
+      /* Covariance matrix for detection */
+      gr_complex **d_covariance_matrix;
+	
+      /* Smoothing factor previous samples array */
+      gr_complex *d_prev_samples;
+
+      /* Number of samples used for covariance based detection */
+      const size_t d_num_samples;
+
+      /* Smoothing factor for covariance based detection */
+      uint8_t d_smoothing_factor;
+	
+      /* Probability of false alarm for covariance based detection */
+      float d_false_alarm_probability;
+	
+      /* Threshold based on false alarm probability */
+      double d_threshold;
+
     public:
       detection_engine_impl (const size_t fft_size, uint8_t method,
                              float energy_thresh_dB, uint8_t nf_est,
                              float noise_floor_val, float noise_floor_time,
-                             const double sampling_rate, uint8_t window);
+                             const double sampling_rate, uint8_t window,
+			     const size_t num_samples, uint8_t smoothing_factor,
+			     float false_alarm);
       ~detection_engine_impl ();
 
       // Where all the action really happens
       int
       work (int noutput_items, gr_vector_const_void_star &input_items,
             gr_vector_void_star &output_items);
+      
+      void
+      compute_covariance_matrix(const gr_complex *in);
+
+      gr_complex
+      compute_autocorrelations(const gr_complex *in, size_t lamda);
 
       void
+      compute_correlations(gr_complex **matrix, uint8_t smoothing_factor,
+			 double *thres1, double *thres2);
+
+      void
+      compute_threshold(const float probability_false_alarm, size_t num_samples,
+		        uint8_t smoothing_factor, double *threshold);
+    
       message_out_print (float *vector, int vector_len);
 
     };

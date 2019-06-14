@@ -6,7 +6,8 @@
 	<import>import orbitsense</import>
 	<make>orbitsense.detection_engine($fft_size, $method,
 		$energy_thresh_dB, $nf_est,
-		$noise_floor_val, $noise_floor_time, $sampling_rate, $window)
+		$noise_floor_val, $noise_floor_time, $sampling_rate, $window,
+		$num_samples, $smoothing_factor, $false_alarm)
 	</make>
 
 	<param>
@@ -14,6 +15,15 @@
 		<key>fft_size</key>
 		<value>1024</value>
 		<type>int</type>
+		<hide>#if int($method())==0 then 'none' else 'all'#</hide>
+	</param>
+
+	<param>
+		<name>Number of samples</name>
+		<key>num_samples</key>
+		<value>1024</value>
+		<type>int</type>
+		<hide>#if int($method())==1 then 'none' else 'all'#</hide>
 	</param>
 
 	<param>
@@ -24,12 +34,10 @@
 		<option>
 			<name>Energy Detection</name>
 			<key>0</key>
-			<opt>hide_thresh:</opt>
 		</option>
 		<option>
 			<name>Covariance Based</name>
 			<key>1</key>
-			<opt>hide_thresh:all</opt>
 		</option>
 	</param>
 
@@ -38,13 +46,14 @@
 		<key>energy_thresh_dB</key>
 		<value>2.0</value>
 		<type>float</type>
-		<hide>$method.hide_thresh</hide>
+		<hide>#if int($method())==0 then 'none' else 'all'#</hide>
 	</param>
 
 	<param>
 		<name>Estimation of Noise Floor</name>
 		<key>nf_est</key>
 		<type>enum</type>
+		<hide>#if int($method())==0 then 'none' else 'all'#</hide>
 		<option>
 			<name>No</name>
 			<key>0</key>
@@ -60,7 +69,7 @@
 		<key>noise_floor_val</key>
 		<value>-100</value>
 		<type>float</type>
-		<hide>#if int($nf_est())==0 then 'none' else 'all'#</hide>
+		<hide>#if int($nf_est())==0 and int($method())==0 then 'none' else 'all'#</hide>
 	</param>
 
 	<param>
@@ -68,9 +77,24 @@
 		<key>noise_floor_time</key>
 		<value>0.1</value>
 		<type>float</type>
-		<hide>#if int($nf_est())==1 then 'none' else 'all'#</hide>
+		<hide>#if int($nf_est())==1 and int($method())==0 then 'none' else 'all'#</hide>
 	</param>
 
+	<param>
+		<name>Smoothing Factor</name>
+		<key>smoothing_factor</key>
+		<value>1</value>
+		<type>int</type>
+		<hide>#if int($method())==1 then 'none' else 'all'#</hide>
+	</param>
+
+	<param>
+		<name>False Alarm Probability</name>
+		<key>false_alarm</key>
+		<value>0.10</value>
+		<type>float</type>
+		<hide>#if int($method())==1 then 'none' else 'all'#</hide>
+	</param>
 
 	<param>
 		<name>Sampling Rate</name>
@@ -83,6 +107,7 @@
 		<name>Window Function</name>
 		<key>window</key>
 		<type>enum</type>
+		<hide>#if int($method())==0 then 'none' else 'all'#</hide>
 		<option>
 			<name>Flat top</name>
 			<key>0</key>
