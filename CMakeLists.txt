@@ -70,6 +70,12 @@ endif()
 if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
     #http://gcc.gnu.org/wiki/Visibility
     add_definitions(-fvisibility=hidden)
+    # Set C++11 support
+    if(CMAKE_VERSION VERSION_LESS "3.1")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
+    else()
+	set(CMAKE_CXX_STANDARD 11)
+    endif()
 endif()
 
 ########################################################################
