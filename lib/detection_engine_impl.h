@@ -117,7 +117,7 @@ namespace gr
       compute_threshold (const float probability_false_alarm,
                          size_t num_samples, uint8_t smoothing_factor,
                          double *threshold);
-
+      void
       message_out_print (float *vector, int vector_len);
 
     };

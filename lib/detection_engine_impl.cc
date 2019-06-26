@@ -72,7 +72,7 @@ namespace gr
             d_noise_floor_val (noise_floor_val),
             d_noise_floor_time (noise_floor_time),
             d_sampling_rate (sampling_rate),
-            d_window (window)
+            d_window (window),
             d_num_samples (num_samples),
             d_smoothing_factor (smoothing_factor),
             d_false_alarm_probability (false_alarm),
@@ -93,18 +93,13 @@ namespace gr
                                                      d_sampling_rate, d_window);
           break;
         case COVARIANCE:
+          set_output_multiple (d_num_samples);
+          /* Initialize Covariance matrix */
+          d_covariance_matrix = new gr_complex[d_smoothing_factor] ();
+          d_prev_samples = new gr_complex[d_smoothing_factor] ();
+          compute_threshold (d_false_alarm_probability, d_num_samples,
+                             d_smoothing_factor, &d_threshold);
           break;
-          (d_fft_size) * sizeof(float), 32);
-              d_fft_size * sizeof(float));
-        }
-
-      if (d_method == COVARIANCE) {
-        set_output_multiple (d_num_samples);
-        /* Initialize Covariance matrix */
-        d_covariance_matrix = new gr_complex[d_smoothing_factor] ();
-        d_prev_samples = new gr_complex[d_smoothing_factor] ();
-        compute_threshold (d_false_alarm_probability, d_num_samples,
-                           d_smoothing_factor, &d_threshold);
       }
     }
 
@@ -124,7 +119,6 @@ namespace gr
     {
       const gr_complex *in = (const gr_complex *) input_items[0];
 
-                               d_noise_floor_vec_dB, d_fft_size);
       switch (d_method)
         {
         case ENERGY_DETECTION:
@@ -133,40 +127,41 @@ namespace gr
           message_out_print (d_energy_detection->d_psd, d_fft_size);
           break;
         case COVARIANCE:
-              /* Save number of samples + smoothing factor for processing */
-              gr_complex tmp_input[d_num_samples + d_smoothing_factor];
-              size_t last_index;
-              double thres1 = 0.0;
-              double thres2 = 0.0;
-              d_num_full_packets = noutput_items / d_num_samples;
+          /* Save number of samples + smoothing factor for processing */
+          gr_complex tmp_input[d_num_samples + d_smoothing_factor];
+          size_t last_index;
+          double thres1 = 0.0;
+          double thres2 = 0.0;
+          size_t d_rep_cnt = 0;
+          size_t d_num_full_packets = noutput_items / d_num_samples;
 
-              std::memcpy (&tmp_input[0], d_prev_samples,
-                           d_smoothing_factor * sizeof(gr_complex));
-              while (d_rep_cnt < d_num_full_packets) {
-                std::memcpy (&tmp_input[d_smoothing_factor],
-                             &in[d_rep_cnt * d_num_samples],
-                             d_num_samples * sizeof(gr_complex));
-                /* Compute covariance matrix */
-                compute_covariance_matrix (tmp_input);
-                /* Calculate correlations */
-                compute_correlations (d_covariance_matrix, d_smoothing_factor,
-                                      &thres1, &thres2);
-                if (thres1 / thres2 > d_threshold) {
-                  ORBITSENSE_DEBUG("Signal detected!");
-                }
+          std::memcpy (&tmp_input[0], d_prev_samples,
+                       d_smoothing_factor * sizeof(gr_complex));
+          while (d_rep_cnt < d_num_full_packets) {
+            std::memcpy (&tmp_input[d_smoothing_factor],
+                         &in[d_rep_cnt * d_num_samples],
+                         d_num_samples * sizeof(gr_complex));
+            /* Compute covariance matrix */
+            compute_covariance_matrix (tmp_input);
+            /* Calculate correlations */
+            compute_correlations (d_covariance_matrix, d_smoothing_factor,
+                                  &thres1, &thres2);
+            if (thres1 / thres2 > d_threshold) {
+              ORBITSENSE_DEBUG("Signal detected!");
+            }
 
-                /* Save last smoothing factor samples for next run*/
-                last_index = (d_rep_cnt + 1) * d_num_samples
-                    - d_smoothing_factor;
-                std::memcpy (&tmp_input[0], &in[last_index],
-                             d_smoothing_factor * sizeof(gr_complex));
+            /* Save last smoothing factor samples for next run*/
+            last_index = (d_rep_cnt + 1) * d_num_samples
+                         - d_smoothing_factor;
+            std::memcpy (&tmp_input[0], &in[last_index],
+                         d_smoothing_factor * sizeof(gr_complex));
 
-                d_rep_cnt++;
-              }
-              /* Save previous samples for next run */
-              std::memcpy (d_prev_samples, &in[last_index],
-                           d_smoothing_factor * sizeof(gr_complex));
-              break;
+            d_rep_cnt++;
+          }
+          /* Save previous samples for next run */
+          std::memcpy (d_prev_samples, &in[last_index],
+                       d_smoothing_factor * sizeof(gr_complex));
+          break;
         }
       // Tell runtime system how many output items we produced.
       return noutput_items;
