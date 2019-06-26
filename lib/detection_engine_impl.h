@@ -68,8 +68,8 @@ namespace gr
       energy_detection* d_energy_detection;
 
       /* Covariance matrix for detection */
-      gr_complex **d_covariance_matrix;
-	
+      gr_complex *d_covariance_matrix;
+
       /* Smoothing factor previous samples array */
       gr_complex *d_prev_samples;
 
@@ -78,10 +78,10 @@ namespace gr
 
       /* Smoothing factor for covariance based detection */
       uint8_t d_smoothing_factor;
-	
+
       /* Probability of false alarm for covariance based detection */
       float d_false_alarm_probability;
-	
+
       /* Threshold based on false alarm probability */
       double d_threshold;
 
@@ -90,8 +90,8 @@ namespace gr
                              float energy_thresh_dB, uint8_t nf_est,
                              float noise_floor_val, float noise_floor_time,
                              const double sampling_rate, uint8_t window,
-			     const size_t num_samples, uint8_t smoothing_factor,
-			     float false_alarm);
+                             const size_t num_samples, uint8_t smoothing_factor,
+                             float false_alarm);
       ~detection_engine_impl ();
 
       // Where all the action really happens
@@ -100,19 +100,24 @@ namespace gr
             gr_vector_void_star &output_items);
       
       void
-      compute_covariance_matrix(const gr_complex *in);
+      compute_covariance_matrix (const gr_complex *in);
 
       gr_complex
-      compute_autocorrelations(const gr_complex *in, size_t lamda);
+      compute_autocorrelations (const gr_complex *in, size_t lamda);
 
       void
-      compute_correlations(gr_complex **matrix, uint8_t smoothing_factor,
-			 double *thres1, double *thres2);
+      compute_autocorrelations (const gr_complex *in, size_t lamda,
+                                gr_complex *result);
 
       void
-      compute_threshold(const float probability_false_alarm, size_t num_samples,
-		        uint8_t smoothing_factor, double *threshold);
-    
+      compute_correlations (gr_complex *matrix, uint8_t smoothing_factor,
+                            double *thres1, double *thres2);
+
+      void
+      compute_threshold (const float probability_false_alarm,
+                         size_t num_samples, uint8_t smoothing_factor,
+                         double *threshold);
+
       message_out_print (float *vector, int vector_len);
 
     };
