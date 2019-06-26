@@ -22,12 +22,12 @@
 #define INCLUDED_ORBITSENSE_DETECTION_ENGINE_IMPL_H
 
 #include <orbitsense/detection_engine.h>
-#include <gnuradio/fft/fft.h>
 #include <math.h>
 #include <boost/fiber/condition_variable.hpp>
 #include <boost/fiber/all.hpp>
 #include <volk/volk.h>
 #include <orbitsense/log.h>
+#include <energy_detection.h>
 
 namespace gr
 {
@@ -61,38 +61,8 @@ namespace gr
 
       uint8_t d_window;
 
-      uint8_t d_mode;
-
-      /* Auxiliary FFT vector */
-      fft::fft_complex *d_fft;
-
-      /* Auxiliary vector */
-      float *d_data_combined;
-
-      /* Auxiliary vector to store FFT shift */
-      float *d_shift_tmp;
-
-      /* Auxiliary vector to store FFT shift for each input */
-      gr_complex *d_fftshift;
-
-      /* window */
-      float *d_window_values;
-
-      /* Noise floor values */
-      float *d_noise_floor_vec_dB;
-
-      /* PSD variable */
-      float *d_psd;
-
-      /* Threshold vector */
-      float *d_energy_thresh_vec_dB;
-
-      /* number of loops for all the samples */
-      size_t d_num_full_packets;
-
-      size_t d_rep_cnt;
-
-      size_t d_noise_floor_est_cnt;
+      /* Duty cycle class instance */
+      energy_detection* d_energy_detection;
 
     public:
       detection_engine_impl (const size_t fft_size, uint8_t method,
@@ -107,19 +77,8 @@ namespace gr
             gr_vector_void_star &output_items);
 
       void
-      create_window_values ();
+      message_out_print (float *vector, int vector_len);
 
-      void
-      psd_estimation (const gr_complex *in);
-
-      void
-      noise_floor_estimation (const gr_complex *in);
-
-      void
-      energy_detector(const gr_complex *in);
-
-      void
-      message_out_print(float *vector, int vector_len);
     };
 
   } // namespace orbitsense

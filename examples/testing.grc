@@ -231,7 +231,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(832, 424)</value>
+      <value>(8, 444)</value>
     </param>
     <param>
       <key>gui_hint</key>
@@ -302,7 +302,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(128, 212)</value>
+      <value>(336, 308)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -357,7 +357,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(176, 324)</value>
+      <value>(120, 164)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -479,7 +479,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(536, 64)</value>
+      <value>(608, 232)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -565,7 +565,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(360, 60)</value>
+      <value>(368, 52)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -612,7 +612,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(616, 184)</value>
+      <value>(560, 104)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -663,7 +663,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(680, 76)</value>
+      <value>(712, 244)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -726,7 +726,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(360, 308)</value>
+      <value>(296, 156)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -785,7 +785,7 @@
     </param>
     <param>
       <key>energy_thresh_dB</key>
-      <value>20</value>
+      <value>2</value>
     </param>
     <param>
       <key>nf_est</key>
@@ -2494,19 +2494,19 @@
   </connection>
   <connection>
     <source_block_id>blocks_add_xx_0</source_block_id>
-    <sink_block_id>blocks_multiply_xx_0</sink_block_id>
+    <sink_block_id>blocks_throttle_0</sink_block_id>
     <source_key>0</source_key>
     <sink_key>0</sink_key>
   </connection>
   <connection>
     <source_block_id>blocks_multiply_const_vxx_0</source_block_id>
-    <sink_block_id>blocks_add_xx_0</sink_block_id>
+    <sink_block_id>blocks_multiply_xx_0</sink_block_id>
     <source_key>0</source_key>
     <sink_key>0</sink_key>
   </connection>
   <connection>
     <source_block_id>blocks_multiply_xx_0</source_block_id>
-    <sink_block_id>blocks_throttle_0</sink_block_id>
+    <sink_block_id>blocks_add_xx_0</sink_block_id>
     <source_key>0</source_key>
     <sink_key>0</sink_key>
   </connection>

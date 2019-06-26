@@ -2,6 +2,7 @@
 *.pyc
 *.pyo
 build/
+examples/*.py
 apps/*.py
 .settings/
 .project
