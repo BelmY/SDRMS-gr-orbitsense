@@ -91,10 +91,6 @@
 			<name>Blackmann-Harris</name>
 			<key>1</key>
 		</option>
-		<option>
-			<name>None</name>
-			<key>2</key>
-		</option>
 	</param>
 
 	<sink>

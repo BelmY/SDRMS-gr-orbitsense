@@ -46,8 +46,7 @@ typedef enum
 typedef enum
 {
   FLAT_TOP = 0,
-  BLACKMANN_HARRIS,
-  NONE
+  BLACKMANN_HARRIS
 } window_function;
 
 #endif /* INCLUDED_ORBITSENSE_API_H */
