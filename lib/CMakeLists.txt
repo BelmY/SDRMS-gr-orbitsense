@@ -29,6 +29,7 @@ link_directories(${Boost_LIBRARY_DIRS})
 list(APPEND orbitsense_sources
     detection_engine_impl.cc
     energy_detection.cpp
+    covariance_absolute_values.cpp
 )
 
 set(orbitsense_sources "${orbitsense_sources}" PARENT_SCOPE)

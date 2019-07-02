@@ -28,6 +28,7 @@
 #include <volk/volk.h>
 #include <orbitsense/log.h>
 #include <energy_detection.h>
+#include "covariance_absolute_values.h"
 
 namespace gr
 {
@@ -37,9 +38,6 @@ namespace gr
     class detection_engine_impl : public detection_engine
     {
     private:
-
-      /* Define static pi */
-      const double pi = 3.141592653589793;
 
       /* The FFT size */
       const size_t d_fft_size;
@@ -67,9 +65,9 @@ namespace gr
       /* Duty cycle class instance */
       energy_detection* d_energy_detection;
 
-      /* Covariance matrix for detection */
-      gr_complex *d_covariance_matrix;
-
+      /* CAV object */
+      cav::CAV *d_cav_engine;
+      
       /* Smoothing factor previous samples array */
       gr_complex *d_prev_samples;
 
@@ -81,9 +79,6 @@ namespace gr
 
       /* Probability of false alarm for covariance based detection */
       float d_false_alarm_probability;
-
-      /* Threshold based on false alarm probability */
-      double d_threshold;
 
     public:
       detection_engine_impl (const size_t fft_size, uint8_t method,
@@ -99,24 +94,6 @@ namespace gr
       work (int noutput_items, gr_vector_const_void_star &input_items,
             gr_vector_void_star &output_items);
       
-      void
-      compute_covariance_matrix (const gr_complex *in);
-
-      gr_complex
-      compute_autocorrelations (const gr_complex *in, size_t lamda);
-
-      void
-      compute_autocorrelations (const gr_complex *in, size_t lamda,
-                                gr_complex *result);
-
-      void
-      compute_correlations (gr_complex *matrix, uint8_t smoothing_factor,
-                            double *thres1, double *thres2);
-
-      void
-      compute_threshold (const float probability_false_alarm,
-                         size_t num_samples, uint8_t smoothing_factor,
-                         double *threshold);
       void
       message_out_print (float *vector, int vector_len);
 

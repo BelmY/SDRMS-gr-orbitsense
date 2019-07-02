@@ -75,8 +75,7 @@ namespace gr
             d_window (window),
             d_num_samples (num_samples),
             d_smoothing_factor (smoothing_factor),
-            d_false_alarm_probability (false_alarm),
-            d_threshold (0.0)
+            d_false_alarm_probability (false_alarm)
     {
       message_port_register_out (pmt::mp ("data_out"));
       /* Process in a per-FFT basis */
@@ -94,11 +93,11 @@ namespace gr
           break;
         case COVARIANCE:
           set_output_multiple (d_num_samples);
-          /* Initialize Covariance matrix */
-          d_covariance_matrix = new gr_complex[d_smoothing_factor] ();
-          d_prev_samples = new gr_complex[d_smoothing_factor] ();
-          compute_threshold (d_false_alarm_probability, d_num_samples,
-                             d_smoothing_factor, &d_threshold);
+          d_prev_samples = new gr_complex[d_smoothing_factor]();
+          /* Initialize CAV instance */
+          d_cav_engine = new cav::CAV(d_num_samples,
+                                    d_smoothing_factor,
+                                    d_false_alarm_probability);
           break;
       }
     }
@@ -108,8 +107,9 @@ namespace gr
      */
     detection_engine_impl::~detection_engine_impl ()
     {
+      delete[] d_prev_samples;
       delete d_energy_detection;
-      delete[] d_covariance_matrix;
+      delete d_cav_engine;
     }
 
     int
@@ -123,17 +123,15 @@ namespace gr
         {
         case ENERGY_DETECTION:
           d_energy_detection->energy_detection_init (in, noutput_items);
-          //twra tipwnei kathe noutput_items des ti tha kaneis apo edw kai pera
           message_out_print (d_energy_detection->d_psd, d_fft_size);
           break;
         case COVARIANCE:
           /* Save number of samples + smoothing factor for processing */
           gr_complex tmp_input[d_num_samples + d_smoothing_factor];
           size_t last_index;
-          double thres1 = 0.0;
-          double thres2 = 0.0;
           size_t d_rep_cnt = 0;
           size_t d_num_full_packets = noutput_items / d_num_samples;
+          int detected = 0;
 
           std::memcpy (&tmp_input[0], d_prev_samples,
                        d_smoothing_factor * sizeof(gr_complex));
@@ -141,15 +139,15 @@ namespace gr
             std::memcpy (&tmp_input[d_smoothing_factor],
                          &in[d_rep_cnt * d_num_samples],
                          d_num_samples * sizeof(gr_complex));
-            /* Compute covariance matrix */
-            compute_covariance_matrix (tmp_input);
-            /* Calculate correlations */
-            compute_correlations (d_covariance_matrix, d_smoothing_factor,
-                                  &thres1, &thres2);
-            if (thres1 / thres2 > d_threshold) {
-              ORBITSENSE_DEBUG("Signal detected!");
-            }
 
+            /* Run CAV on new samples */
+            detected = 
+                  d_cav_engine->covariance_absolute_values_engine (tmp_input);
+
+            if (detected == 1) {
+              ORBITSENSE_DEBUG("Signal_detected!");
+            }
+            
             /* Save last smoothing factor samples for next run*/
             last_index = (d_rep_cnt + 1) * d_num_samples
                          - d_smoothing_factor;
@@ -165,75 +163,6 @@ namespace gr
         }
       // Tell runtime system how many output items we produced.
       return noutput_items;
-    }
-
-    void
-    detection_engine_impl::compute_covariance_matrix (const gr_complex *in)
-    {
-      for (uint8_t i = 0; i < d_smoothing_factor; i++) {
-        d_covariance_matrix[i] = compute_autocorrelations (in, i);
-      }
-    }
-
-    gr_complex
-    detection_engine_impl::compute_autocorrelations (const gr_complex *in,
-                                                     size_t lamda)
-    {
-
-      gr_complex sum = gr_complex (0, 0);
-
-      volk_32fc_x2_conjugate_dot_prod_32fc (&sum, &in[d_smoothing_factor],
-                                            &in[d_smoothing_factor - lamda],
-                                            d_num_samples);
-
-      return gr_complex (sum.real () / d_num_samples,
-                         sum.imag () / d_num_samples);
-    }
-
-    void
-    detection_engine_impl::compute_autocorrelations (const gr_complex *in,
-                                                     size_t lamda,
-                                                     gr_complex *result)
-    {
-      gr_complex sum;
-      volk_32fc_x2_conjugate_dot_prod_32fc (&sum, &in[d_smoothing_factor],
-                                            &in[d_smoothing_factor - lamda],
-                                            d_num_samples);
-      *result = gr_complex (sum.real () / d_num_samples,
-                            sum.imag () / d_num_samples);
-    }
-
-    void
-    detection_engine_impl::compute_correlations (gr_complex *matrix,
-                                                 uint8_t smoothing_factor,
-                                                 double *thres1, double *thres2)
-    {
-      double sum1 = 0.0;
-      double sum2 = 0.0;
-
-      for (uint8_t i = 1; i < smoothing_factor; i++) {
-        sum1 += (smoothing_factor - i) * std::abs (matrix[i]);
-      }
-      sum1 = (2.0 * sum1) / smoothing_factor;
-      //sum1 += std::abs(matrix[0][0]);
-
-      *thres1 = sum1;
-      *thres2 = std::abs (matrix[0]);
-
-    }
-
-    void
-    detection_engine_impl::compute_threshold (
-        const float probability_false_alarm, size_t num_samples,
-        uint8_t smoothing_factor, double *threshold)
-    {
-      const float pfa = probability_false_alarm;
-      /* Q^-1(x) = sqrt(2) * inverse complementary error function(2x) */
-      *threshold = (1.0
-          + ((smoothing_factor - 1.0) * std::sqrt (2.0 / num_samples * pi)))
-          / (1.0
-              - (std::sqrt (2.0) * boost::math::erfc_inv (2.0 * pfa)
-                  * std::sqrt (2.0 / num_samples)));
     }
 
     void
