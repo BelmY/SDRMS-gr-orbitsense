@@ -19,5 +19,6 @@
 # Boston, MA 02110-1301, USA.
 
 install(FILES
-    orbitsense_detection_engine.xml DESTINATION share/gnuradio/grc/blocks
+    orbitsense_detection_engine.xml
+    orbitsense_Statistics.xml DESTINATION share/gnuradio/grc/blocks
 )
