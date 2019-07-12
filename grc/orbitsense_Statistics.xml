@@ -4,8 +4,11 @@
   <key>orbitsense_Statistics</key>
   <category>[orbitsense]</category>
   <import>import orbitsense</import>
-  <make>orbitsense.Statistics($samp_rate, $modulation)</make>
-  <!-- Make one 'param' node for every Parameter you want settable from the GUI.
+  <make>orbitsense.Statistics($samp_rate, $signal_on, $modulation, $nf_estimation_time)</make>
+
+	<callback>self.$(id).set_signal($signal_on)</callback>				
+					
+	<!-- Make one 'param' node for every Parameter you want settable from the GUI.
        Sub-nodes:
        * name
        * key (makes the value accessible as $keyname, e.g. in the make node)
@@ -20,7 +23,19 @@
     <name>Modulation</name>
     <key>modulation</key>
     <type>raw</type>
-  </param>
+	</param>
+
+	<param>
+		<name>Signal On</name>
+		<key>signal_on</key>
+		<type>int</type>
+	</param>
+
+	<param>
+		<name>NF estimation time (s)</name>
+		<key>nf_estimation_time</key>
+		<type>real</type>
+	</param>
 
   <!-- Make one 'sink' node per input. Sub-nodes:
        * name (an identifier for the GUI)
@@ -32,6 +47,12 @@
     <type>complex<!-- e.g. int, float, complex, byte, short, xxx_vector, ...--></type>
   </sink>
 
+	<sink>
+		<name>data_in</name>
+		<type>message</type>
+		<optional>1</optional>
+	</sink>
+
   <!-- Make one 'source' node per output. Sub-nodes:
        * name (an identifier for the GUI)
        * type
@@ -41,4 +62,5 @@
     <name>out</name>
     <type>complex<!-- e.g. int, float, complex, byte, short, xxx_vector, ...--></type>
   </source>
+
 </block>
