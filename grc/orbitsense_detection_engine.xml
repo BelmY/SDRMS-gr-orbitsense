@@ -42,7 +42,7 @@
 	</param>
 
 	<param>
-		<name>Energy Threshold in db</name>
+		<name>Energy Threshold (db)</name>
 		<key>energy_thresh_dB</key>
 		<value>2.0</value>
 		<type>float</type>
@@ -65,7 +65,7 @@
 	</param>
 
 	<param>
-		<name>Noise Floor value</name>
+		<name>Noise Floor value (db)</name>
 		<key>noise_floor_val</key>
 		<value>-100</value>
 		<type>float</type>
@@ -100,7 +100,8 @@
 		<name>Sampling Rate</name>
 		<key>sampling_rate</key>
 		<value>1e6</value>
-		<type>float</type>
+    <type>float</type>
+    <hide>#if int($method())==0 then 'none' else 'all'#</hide>
 	</param>
 
 	<param>
@@ -128,5 +129,67 @@
 		<type>message</type>
 	</source>
 
+  <doc>
+Detection Engine:
+
+Detection engine block receives a complex stream of samples and detects
+whether a signal exists.
+It supports two detection methods, an energy detection method, and a
+covariance based method.
+  
+---------------------------------------------------------------------------
+Energy Detection:
+
+For the energy detection the user can specify a noise floor value or an
+automatic noise floor estimation can be done. The arguments for the 
+energy detection algorithm are the following
+
+FFT Size:
+The number of samples used for the FFT.
+
+Energy Threshold (db):
+The threshold between the noise floor and a sample needed to assume that
+a signal exists in that fft bin.
+
+Estimation of Noise Floor:
+Boolean value. If set to yes the noise floor value will be estimated.
+During the estimation no signal should be present. If set to no user can
+specify the noise floor value in db.
+
+NF Estimation time (s):
+Only present if Estimation of Noise Floor is set to yes. Time that the
+estimation will run. No signal must be present while the noise floor 
+estimation runs.
+
+Noise Floor Value (db):
+Only present if Estimation of Noise Floor is set to no. User specifies the
+noise floor value in db.
+
+Sample Rate:
+The sampling rate used.
+
+Window Fuction:
+Window function to be used.
+
+---------------------------------------------------------------------------
+Covariance Based:
+
+For the covariance based detection the user can specify the number of samples
+the algorithm is going to run, the smoothing factor which is the number of
+samples that the cross-correlation will be calculated and the probability of
+false alarms which is used for the calculation of a threshold to compare the
+cross-correlation to auto-correlation ratio.
+
+Number of Samples:
+Number of samples used to compute covariance matrix.
+
+Smoothing Factor:
+Number of previous samples used to compute cross-correlation for the
+covariance matrix. Covariance matrix has smoothing factor * smoothing
+factor size.
+
+Probability of False alarm:
+Probability of False alarm.
+  </doc>
 
 </block>
