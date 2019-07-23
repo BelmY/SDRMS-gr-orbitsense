@@ -23,8 +23,6 @@
 
 #include <orbitsense/detection_engine.h>
 #include <math.h>
-#include <boost/fiber/condition_variable.hpp>
-#include <boost/fiber/all.hpp>
 #include <volk/volk.h>
 #include <orbitsense/log.h>
 #include <energy_detection.h>
