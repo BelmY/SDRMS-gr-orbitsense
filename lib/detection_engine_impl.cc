@@ -143,10 +143,12 @@ namespace gr
             /* Run CAV on new samples */
             detected = 
                   d_cav_engine->covariance_absolute_values_engine (tmp_input);
-
+            /*
             if (detected == 1) {
               ORBITSENSE_DEBUG("Signal_detected!");
-            }
+            }*/
+
+            message_out_print(detected);
             
             /* Save last smoothing factor samples for next run*/
             last_index = (d_rep_cnt + 1) * d_num_samples
@@ -170,6 +172,13 @@ namespace gr
     {
       pmt::pmt_t vector_combined = pmt::init_f32vector (vector_len, vector);
       message_port_pub (pmt::mp ("data_out"), vector_combined);
+    }
+
+    void
+    detection_engine_impl::message_out_print (bool in)
+    {
+      pmt::pmt_t detected = pmt::from_bool(in);
+      message_port_pub (pmt::mp ("data_out"), detected);
     }
 
   } /* namespace orbitsense */

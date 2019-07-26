@@ -95,6 +95,9 @@ namespace gr
       void
       message_out_print (float *vector, int vector_len);
 
+      void
+      message_out_print (bool in);
+
     };
 
   } // namespace orbitsense
