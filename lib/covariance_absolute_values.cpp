@@ -56,7 +56,7 @@ namespace cav
     for (uint8_t i = 1; i < d_smoothing_factor; i++) {
       d_t1 += (d_smoothing_factor - i) * std::abs(d_covariance_matrix[i]);
     }
-    d_t1 = (2.0 * d_t1) / d_smoothing_factor;
+    d_t1 = std::abs(d_covariance_matrix[0]) + (2.0 * d_t1) / d_smoothing_factor;
     d_t2 = std::abs(d_covariance_matrix[0]);
   }
 
