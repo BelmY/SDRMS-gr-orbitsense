@@ -4,9 +4,13 @@
   <key>orbitsense_Statistics</key>
   <category>[orbitsense]</category>
   <import>import orbitsense</import>
-  <make>orbitsense.Statistics($samp_rate, $signal_on, $modulation, $nf_estimation_time)</make>
+  <make>orbitsense.Statistics($samp_rate, $signal_on, $signal_estimation_time,\
+                              $iterations, $snr_list, $export_csv,\
+                              $csv_file, $export_plot, $plot_file, $modulation,\
+                              $false_alarm)</make>
 
-	<callback>self.$(id).set_signal($signal_on)</callback>				
+  <callback>self.$(id).set_signal($signal_on)</callback>
+  <callback>self.$(id).open($file)</callback>
 					
 	<!-- Make one 'param' node for every Parameter you want settable from the GUI.
        Sub-nodes:
@@ -19,12 +23,6 @@
     <type>real</type>
   </param>
 
-  <param>
-    <name>Modulation</name>
-    <key>modulation</key>
-    <type>raw</type>
-	</param>
-
 	<param>
 		<name>Signal On</name>
 		<key>signal_on</key>
@@ -32,9 +30,87 @@
 	</param>
 
 	<param>
-		<name>NF estimation time (s)</name>
-		<key>nf_estimation_time</key>
+		<name>Signal estimation time (s)</name>
+		<key>signal_estimation_time</key>
 		<type>real</type>
+	</param>
+
+	<param>
+		<name>Iterations</name>
+		<key>iterations</key>
+		<type>int</type>
+  </param>
+
+  <param>
+    <name>SNR List</name>
+    <key>snr_list</key>
+    <type>real_vector</type>
+  </param>
+
+  <param>
+    <name>Export CSV</name>
+    <key>export_csv</key>
+    <type>enum</type>
+    <hide>part</hide>
+    <option>
+      <name>No</name>
+      <key>False</key>
+    </option>
+    <option>
+      <name>Yes</name>
+      <key>True</key>
+    </option>
+    <tab>Plots &amp; Statistics</tab>
+  </param>
+
+  <param>
+    <name>CSV File</name>
+    <key>csv_file</key>
+    <value></value>
+    <type>file_open</type>
+    <hide>#if $export_csv() == 'True' then 'part' else 'all'#</hide>
+    <tab>Plots &amp; Statistics</tab>
+  </param>
+
+  <param>
+    <name>Export Plot</name>
+    <key>export_plot</key>
+    <type>enum</type>
+    <hide>part</hide>
+    <option>
+      <name>No</name>
+      <key>False</key>
+    </option>
+    <option>
+      <name>Yes</name>
+      <key>True</key>
+    </option>
+    <tab>Plots &amp; Statistics</tab>
+  </param>
+
+  <param>
+    <name>Plot File</name>
+    <key>plot_file</key>
+    <value></value>
+    <type>file_open</type>
+    <hide>#if $export_plot() == 'True' then 'part' else 'all'#</hide>
+    <tab>Plots &amp; Statistics</tab>
+  </param>
+
+  <param>
+    <name>Modulation</name>
+    <key>modulation</key>
+    <type>raw</type>
+    <hide>part</hide> 
+    <tab>Plots &amp; Statistics</tab>
+  </param>
+
+  <param>
+    <name>False Alarm Probability</name>
+    <key>false_alarm</key>
+    <type>raw</type>
+    <hide>part</hide>
+    <tab>Plots &amp; Statistics</tab>
 	</param>
 
   <!-- Make one 'sink' node per input. Sub-nodes:
