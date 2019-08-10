@@ -1,0 +1,4 @@
+matplotlib==2.2.4
+numpy==1.16.4
+pandas==0.24.2
+pmt==0.0.4
