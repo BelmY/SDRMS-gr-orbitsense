@@ -25,6 +25,9 @@ import math
 import os
 import pandas
 import matplotlib
+
+matplotlib.use('TKAgg', warn = True, force = True)
+
 import matplotlib.pyplot as plt
 
 from gnuradio import gr
@@ -36,7 +39,7 @@ class Statistics(gr.sync_block):
     """
     def __init__(self, samp_rate, signal_on, signal_estimation_time, iterations,\
                  snr_list, export_csv, csv_file_path, export_plots, plot_file_path,\
-                 modulation, false_alarm):
+                 modulation, smoothing_factor, signal_bandwidth, false_alarm, window_size):
         gr.sync_block.__init__(self,
             name="Statistics",
             in_sig=[numpy.complex64],
@@ -49,8 +52,13 @@ class Statistics(gr.sync_block):
         self.snr_list = snr_list
         self.export_csv = export_csv
         self.csv_file_path = csv_file_path
+        self.export_plots = export_plots
+        self.plot_file_path = plot_file_path
         self.modulation = modulation
+        self.smoothing_factor = smoothing_factor
+        self.signal_bandwidth = signal_bandwidth
         self.false_alarm = false_alarm
+        self.window_size = window_size
         self.signal_estimation_samples = self.signal_estimation_time * samp_rate
         self.snr_index = 0
         self.signal_samples = 0.0
@@ -106,6 +114,9 @@ class Statistics(gr.sync_block):
         if len(self.snr_list) == self.snr_index:
             if (self.export_csv):
                 self.export_csv_detection_ratio(self.snr_list, self.detection_ratio_list, self.csv_file_path)
+            if (self.export_plots):
+                print(matplotlib.rcParams['axes.titlesize'])
+                self.plot(self.snr_list, self.detection_ratio_list, self.plot_file_path)
             return -1
         
         return len(output_items[0])
@@ -118,7 +129,6 @@ class Statistics(gr.sync_block):
 
     def calculate_noise_power(self, signal_power, snr):
         noise_power = signal_power * (10.0**(-snr/10.0))
-        print noise_power
         return math.sqrt(noise_power)
     
     def stats(self, msg):
@@ -137,12 +147,41 @@ class Statistics(gr.sync_block):
         self.signal_on = on
 
     def plot(self, snr_list, detection_ratio, path):
-        pass
+        matplotlib.rcParams['figure.facecolor'] = 'w'
+        matplotlib.rcParams['legend.loc'] = 'upper left'
+        
+        fig = plt.figure(figsize=[20, 15])
+        
+        plt.plot(snr_list, detection_ratio, marker='o')
+        
+        plt.suptitle('Detection Ratio per SNR')
+        title = 'sampling rate: ' + str(self.samp_rate)
+        if self.smoothing_factor:
+            title += ', smoothing factor: ' + str(self.smoothing_factor)
+        if self.signal_bandwidth:
+            title += ', signal bandwidth: ' + str(self.signal_bandwidth)
+        if self.false_alarm:
+            title += ', probability false alarm: ' + str(self.false_alarm)
+
+        plt.title(title)
+        
+        plt.xlabel('SNR (dB)')
+        plt.ylabel('Detection Ratio')
+        plt.grid(b = True)
+        
+        plt.legend([str(self.window_size) + ' sps'])
+        plt.yticks(numpy.arange(0.0, 1.1, 0.1))
+        
+        if (os.path.isdir(path)):
+            path += '/' + 'Detection_ratio_' + str(self.modulation) + '_' + str(self.samp_rate) + 'sps_' +\
+                    str(self.false_alarm) + 'prob_fa_' + str(self.window_size) + '_window' + '.jpg'
+            plt.savefig(path)
+        plt.show(block = True)
 
     def export_csv_detection_ratio(self, snr_list, detection_ratio_list, path):
         if (os.path.isdir(path)):
             path += '/' + 'Detection_ratio_' + str(self.modulation) + '_' + str(self.samp_rate) + 'sps_' +\
-                    str(self.false_alarm) + 'prob_fa' + '.csv'
+                    str(self.false_alarm) + 'prob_fa_' + str(self.window_size) + '_window' + '.csv'
         df1 = pandas.DataFrame(snr_list, columns = ['SNR'])
         df2 = pandas.DataFrame(detection_ratio_list, columns = ['Detection_Ratio'])
 
