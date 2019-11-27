@@ -39,13 +39,13 @@ namespace gr
                             float noise_floor_val, float noise_floor_time,
                             const double sampling_rate, uint8_t window,
                             const size_t num_samples, uint8_t smoothing_factor,
-                            float false_alarm)
+                            float false_alarm, uint8_t est_snr)
     {
       return gnuradio::get_initial_sptr (
           new detection_engine_impl (fft_size, method, energy_thresh_dB, nf_est,
                                      noise_floor_val, noise_floor_time,
                                      sampling_rate, window, num_samples,
-                                     smoothing_factor, false_alarm));
+                                     smoothing_factor, false_alarm, est_snr));
     }
 
     /*
@@ -61,7 +61,8 @@ namespace gr
                                                   uint8_t window,
                                                   const size_t num_samples,
                                                   uint8_t smoothing_factor,
-                                                  float false_alarm) :
+                                                  float false_alarm,
+                                                  uint8_t est_snr) :
             gr::sync_block ("detection_engine",
                             gr::io_signature::make (1, 1, sizeof(gr_complex)),
                             gr::io_signature::make (0, 0, 0)),
@@ -75,7 +76,8 @@ namespace gr
             d_window (window),
             d_num_samples (num_samples),
             d_smoothing_factor (smoothing_factor),
-            d_false_alarm_probability (false_alarm)
+            d_false_alarm_probability (false_alarm),
+            d_est_snr (est_snr)
     {
       message_port_register_out (pmt::mp ("data_out"));
       /* Process in a per-FFT basis */
@@ -92,12 +94,12 @@ namespace gr
                                                      d_sampling_rate, d_window);
           break;
         case COVARIANCE:
-          set_output_multiple (d_num_samples);
-          d_prev_samples = new gr_complex[d_smoothing_factor]();
+          set_output_multiple (4096);
           /* Initialize CAV instance */
           d_cav_engine = new cav::CAV(d_num_samples,
                                     d_smoothing_factor,
-                                    d_false_alarm_probability);
+                                    d_false_alarm_probability,
+                                    d_est_snr);
           break;
       }
     }
@@ -107,7 +109,6 @@ namespace gr
      */
     detection_engine_impl::~detection_engine_impl ()
     {
-      delete[] d_prev_samples;
       delete d_energy_detection;
       delete d_cav_engine;
     }
@@ -127,40 +128,19 @@ namespace gr
           break;
         case COVARIANCE:
           /* Save number of samples + smoothing factor for processing */
-          gr_complex tmp_input[d_num_samples + d_smoothing_factor];
-          size_t last_index;
-          size_t d_rep_cnt = 0;
-          size_t d_num_full_packets = noutput_items / d_num_samples;
-          int detected = 0;
+          std::vector<int> detected;
 
-          std::memcpy (&tmp_input[0], d_prev_samples,
-                       d_smoothing_factor * sizeof(gr_complex));
-          while (d_rep_cnt < d_num_full_packets) {
-            std::memcpy (&tmp_input[d_smoothing_factor],
-                         &in[d_rep_cnt * d_num_samples],
-                         d_num_samples * sizeof(gr_complex));
+          /* Run CAV on new samples */
+          detected = d_cav_engine->covariance_absolute_values_engine (in,
+                                                                noutput_items);
+          /*
+          if (detected == 1) {
+            ORBITSENSE_DEBUG("Signal_detected!");
+          }*/
 
-            /* Run CAV on new samples */
-            detected = 
-                  d_cav_engine->covariance_absolute_values_engine (tmp_input);
-            /*
-            if (detected == 1) {
-              ORBITSENSE_DEBUG("Signal_detected!");
-            }*/
-
-            message_out_print(detected);
-            
-            /* Save last smoothing factor samples for next run*/
-            last_index = (d_rep_cnt + 1) * d_num_samples
-                         - d_smoothing_factor;
-            std::memcpy (&tmp_input[0], &in[last_index],
-                         d_smoothing_factor * sizeof(gr_complex));
-
-            d_rep_cnt++;
+          if (detected[0] < 2) {
+            message_out_print(detected[0]);
           }
-          /* Save previous samples for next run */
-          std::memcpy (d_prev_samples, &in[last_index],
-                       d_smoothing_factor * sizeof(gr_complex));
           break;
         }
       // Tell runtime system how many output items we produced.

@@ -66,9 +66,6 @@ namespace gr
       /* CAV object */
       cav::CAV *d_cav_engine;
       
-      /* Smoothing factor previous samples array */
-      gr_complex *d_prev_samples;
-
       /* Number of samples used for covariance based detection */
       const size_t d_num_samples;
 
@@ -78,13 +75,16 @@ namespace gr
       /* Probability of false alarm for covariance based detection */
       float d_false_alarm_probability;
 
+      /* Estimate SNR flag for CAV algorithm */
+      uint8_t d_est_snr;
+
     public:
       detection_engine_impl (const size_t fft_size, uint8_t method,
                              float energy_thresh_dB, uint8_t nf_est,
                              float noise_floor_val, float noise_floor_time,
                              const double sampling_rate, uint8_t window,
                              const size_t num_samples, uint8_t smoothing_factor,
-                             float false_alarm);
+                             float false_alarm, uint8_t est_snr);
       ~detection_engine_impl ();
 
       // Where all the action really happens

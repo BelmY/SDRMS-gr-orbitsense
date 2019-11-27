@@ -49,8 +49,10 @@ namespace gr
        */
       static sptr
       make (const size_t fft_size, uint8_t method, float energy_thresh_dB,
-            uint8_t nf_est, float noise_floor_val, float d_noise_floor_time, const double sampling_rate,
-            uint8_t window, const size_t num_samples, uint8_t smoothing_factor, float false_alarm);
+            uint8_t nf_est, float noise_floor_val, float d_noise_floor_time,
+            const double sampling_rate, uint8_t window,
+            const size_t num_samples, uint8_t smoothing_factor,
+            float false_alarm, uint8_t est_snr);
     };
 
   } // namespace orbitsense

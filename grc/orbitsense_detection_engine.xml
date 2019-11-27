@@ -7,7 +7,7 @@
 	<make>orbitsense.detection_engine($fft_size, $method,
 		$energy_thresh_dB, $nf_est,
 		$noise_floor_val, $noise_floor_time, $sampling_rate, $window,
-		$num_samples, $smoothing_factor, $false_alarm)
+		$num_samples, $smoothing_factor, $false_alarm, $est_snr)
 	</make>
 
 	<param>
@@ -95,6 +95,14 @@
 		<type>float</type>
 		<hide>#if int($method())==1 then 'none' else 'all'#</hide>
 	</param>
+
+  <param>
+    <name>Estimate SNR</name>
+    <key>est_snr</key>
+    <value>0</value>
+    <type>int</type>
+    <hide>#if int($method()) == 1 the 'none' else 'all'#</hide>
+  </param>
 
 	<param>
 		<name>Sampling Rate</name>

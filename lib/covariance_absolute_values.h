@@ -22,6 +22,7 @@
 #define INCLUDED_COVARIANCE_ABSOLUTE_VALUES_H
 
 #include <complex>
+#include <vector>
 
 namespace cav
 {
@@ -41,6 +42,9 @@ namespace cav
     /* Probability of false alarm for covariance based detection */
     float d_false_alarm_probability;
 
+    /* SNR estimation flag */
+    uint8_t d_est_snr;
+
     /* Sum of main diagonal of covariance matrix */
     double d_t1;
 
@@ -51,10 +55,25 @@ namespace cav
     double d_threshold;
 
     /* Covariance matrix for detection */
-    std::complex<float> *d_covariance_matrix;
+    std::complex<float>* d_covariance_matrix;
 
     /* Number of samples plus smoothing factor samples array */
-    std::complex<float> *d_samples;
+    std::complex<float>** d_samples;
+
+    /* Number of saved samples */
+    unsigned int d_samples_index;
+
+    /* Unfiltered samples plus history samples array */
+    std::complex<float>* d_samples_unfilt;
+
+    /* Estimated noise power */
+    double d_estimated_noise_power;
+
+    /* Times of noise estimation */
+    unsigned int d_estimated_noise_times;
+
+    /* Estimated signal + noise power */
+    double d_estimated_signal_noise_power;
 
     void
     compute_covariance_matrix (const std::complex<float> *samples);
@@ -69,15 +88,30 @@ namespace cav
     void
     compute_threshold (void);
 
+    std::vector<int>
+    unfiltered_save_run (const std::complex<float> *samples, size_t nitems);
+
+    void
+    estimate_noise_rms (std::complex<float> *in, size_t nitems);
+
+    void
+    estimate_signal_noise_rms (std::complex<float>* in, size_t nitems);
+
+    void
+    print_snr_db (void);
+
+    void
+    run_cav (int i);
+
   public:
 
     CAV (const size_t num_samples, const uint8_t smoothing_factor,
-         const double false_alarm_probability);
+         const double false_alarm_probability, const uint8_t est_snr);
 
     ~CAV ();
 
-    int
-    covariance_absolute_values_engine (const std::complex<float> *samples); 
+    std::vector<int> 
+    covariance_absolute_values_engine (const std::complex<float> *samples, size_t nitems); 
   };
 } /* namespase cav */
 
